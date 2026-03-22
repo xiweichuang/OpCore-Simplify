@@ -668,7 +668,7 @@ class ConfigProdigy:
             hardware_report.get("CPU").get("Manufacturer"),
             hardware_report.get("CPU").get("Codename"), 
             hardware_report.get("CPU").get("Core Count"), 
-            list((hardware_report.get("GPU") or {}).items())[0][-1].get("Manufacturer") if hardware_report.get("GPU") else None,
+            list((hardware_report.get("GPU") or {}).items())[0][-1].get("Manufacturer") if hardware_report.get("GPU") else "",
             hardware_report.get("Network", {}),
             macos_version,
             kexts,
