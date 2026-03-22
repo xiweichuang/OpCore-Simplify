@@ -39,6 +39,17 @@ class CompatibilityChecker:
     def is_low_end_intel_cpu(self, processor_name):
         return any(cpu_branding in processor_name for cpu_branding in ("Celeron", "Pentium"))
 
+    def _get_intel_igpu_codename(self, device_id):
+        prefix = device_id[:2].upper()
+        codenames = {
+            "59": "Kaby Lake", "87": "Coffee Lake", "3E": "Coffee Lake",
+            "9B": "Comet Lake", "8A": "Ice Lake", "19": "Skylake",
+            "16": "Broadwell", "09": "Skylake",
+            "04": "Haswell", "0A": "Haswell", "0C": "Haswell", "0D": "Haswell",
+            "01": "Sandy/Ivy Bridge",
+        }
+        return codenames.get(prefix, "Unknown")
+
     def check_cpu_compatibility(self):
         max_version = os_data.get_latest_darwin_version()
         min_version = os_data.get_lowest_darwin_version()
@@ -69,12 +80,36 @@ class CompatibilityChecker:
     def check_gpu_compatibility(self):
         if not self.hardware_report.get("GPU"):
             print("")
-            print("No GPU found!")
-            print("Please make sure to export the hardware report with the GPU information")
-            print("and try again.")
+            print("GPU was not detected in the hardware report.")
+            print("You can manually specify your Intel integrated GPU's Device ID.")
+            print("Find it in: Device Manager > Display Adapters > [GPU] > Properties")
+            print("> Details > Hardware IDs, look for PCI\\VEN_8086&DEV_XXXX")
             print("")
-            self.utils.request_input()
-            self.utils.exit_program()
+            while True:
+                device_id_input = self.utils.request_input("Enter Intel iGPU Device ID (4 hex digits, e.g. 5902), or press Enter to skip: ").strip().upper()
+                if not device_id_input:
+                    print("")
+                    print("You cannot install macOS without a supported GPU.")
+                    print("")
+                    self.utils.request_input()
+                    self.utils.exit_program()
+                    return
+                if len(device_id_input) == 4:
+                    try:
+                        int(device_id_input, 16)
+                        codename = self._get_intel_igpu_codename(device_id_input)
+                        self.hardware_report["GPU"] = {
+                            "Intel HD Graphics": {
+                                "Manufacturer": "Intel",
+                                "Codename": codename,
+                                "Device ID": "8086-{}".format(device_id_input),
+                                "Device Type": "Integrated GPU"
+                            }
+                        }
+                        break
+                    except ValueError:
+                        pass
+                print("Invalid format. Please enter exactly 4 hexadecimal digits (e.g., 5902).")
 
         for gpu_name, gpu_props in self.hardware_report["GPU"].items():
             gpu_manufacturer = gpu_props.get("Manufacturer")
@@ -100,9 +135,6 @@ class CompatibilityChecker:
                 elif device_id.startswith("8A"):
                     min_version = "19.4.0"
                 else:
-                    max_version = min_version = None
-
-                if self.is_low_end_intel_cpu(self.hardware_report.get("CPU").get("Processor Name")):
                     max_version = min_version = None
             elif "AMD" in gpu_manufacturer:
                 if "Navi 2" in gpu_codename:
@@ -381,7 +413,7 @@ class CompatibilityChecker:
 
         index = 0
         for device_type, function in steps:
-            if self.hardware_report.get(device_type):
+            if self.hardware_report.get(device_type) or device_type == 'GPU':
                 index += 1
                 print("{}. {}:".format(index, device_type))
                 time.sleep(0.25)

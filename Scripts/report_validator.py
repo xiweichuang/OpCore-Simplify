@@ -64,7 +64,7 @@ class ReportValidator:
                 },
                 "GPU": {
                     "type": dict,
-                    "required": True,
+                    "required": False,
                     "values_rule": {
                         "type": dict,
                         "schema": {
