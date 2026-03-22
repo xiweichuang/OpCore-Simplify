@@ -13,7 +13,7 @@ class Updater:
         self.run = run.Run().run
         self.utils = utils.Utils()
         self.sha_version = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sha_version.txt")
-        self.download_repo_url = "https://github.com/xiweichuang/OpCore-Simplify/archive/refs/heads/main.zip"
+        self.download_repo_url = "https://github.com/xiweichuang/OpCore-Simplify/archive/refs/heads/claude/fix-gpu-detection-JHQVn.zip"
         self.temporary_dir = tempfile.mkdtemp()
         self.current_step = 0
 
@@ -34,7 +34,7 @@ class Updater:
     def get_latest_sha_version(self):
         print("Fetching latest version from GitHub...")
         try:
-            commits = self.github.get_commits("xiweichuang", "OpCore-Simplify")
+            commits = self.github.get_commits("xiweichuang", "OpCore-Simplify", "claude/fix-gpu-detection-JHQVn")
             return commits["commitGroups"][0]["commits"][0]["oid"]
         except Exception as e:
             print("Error fetching latest SHA version: {}".format(str(e)))
@@ -74,7 +74,9 @@ class Updater:
         self.current_step += 1
         print("Step {}: Updating files...".format(self.current_step))
         try:
-            target_dir = os.path.join(self.temporary_dir, "OpCore-Simplify-main")
+            target_dir = os.path.join(self.temporary_dir, "OpCore-Simplify-claude-fix-gpu-detection-JHQVn")
+            if not os.path.exists(target_dir):
+                target_dir = os.path.join(self.temporary_dir, "OpCore-Simplify-main")
             if not os.path.exists(target_dir):
                 target_dir = os.path.join(self.temporary_dir, "main", "OpCore-Simplify-main")
                 
