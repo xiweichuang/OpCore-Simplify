@@ -13,7 +13,7 @@ class Updater:
         self.run = run.Run().run
         self.utils = utils.Utils()
         self.sha_version = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sha_version.txt")
-        self.download_repo_url = "https://github.com/lzhoang2801/OpCore-Simplify/archive/refs/heads/main.zip"
+        self.download_repo_url = "https://github.com/xiweichuang/OpCore-Simplify/archive/refs/heads/main.zip"
         self.temporary_dir = tempfile.mkdtemp()
         self.current_step = 0
 
@@ -34,7 +34,7 @@ class Updater:
     def get_latest_sha_version(self):
         print("Fetching latest version from GitHub...")
         try:
-            commits = self.github.get_commits("lzhoang2801", "OpCore-Simplify")
+            commits = self.github.get_commits("xiweichuang", "OpCore-Simplify")
             return commits["commitGroups"][0]["commits"][0]["oid"]
         except Exception as e:
             print("Error fetching latest SHA version: {}".format(str(e)))
